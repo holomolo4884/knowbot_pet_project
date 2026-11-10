@@ -1,0 +1,60 @@
+[project]
+name = "knowbot-backend"
+version = "0.1.0"
+description = "RAG-система для поиска по базе знаний компании"
+readme = "README.md"
+authors = [
+    { name = "holomolo4884", email = "goncharov.vlad2006@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+core = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic>=2.9.2",
+    "pydantic-settings>=2.5.2",
+]
+
+database = [
+    "sqlalchemy>=2.0.35",
+    "asyncpg>=0.30.0",
+    "pgvector>=0.3.5",
+    "alembic>=1.13.3",
+]
+
+llm = [
+    "openai>=1.51.0",
+    "sentence-transformers>=3.2.0",
+]
+
+utils = [
+    "python-dotenv>=1.0.1",
+    "httpx>=0.27.2",
+    "tenacity>=9.0.0",
+]
+
+dev = [
+    "pytest>=8.3.3",
+    "pytest-asyncio>=0.24.0",
+    "ruff>=0.7.0",
+    "mypy>=1.11.2",
+]
+
+all = ["knowbot-backend[core,database,llm,utils,dev]"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"] 

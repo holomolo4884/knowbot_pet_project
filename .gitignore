@@ -1,0 +1,59 @@
+# Secrets and local environment files
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Python and uv
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node.js and Next.js
+node_modules/
+.next/
+out/
+dist/
+.turbo/
+.vercel/
+coverage/
+*.tsbuildinfo
+frontend/next-env.d.ts
+
+# Build and package output
+build/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Local databases and Docker data
+*.db
+*.sqlite
+*.sqlite3
+postgres_data/
+
+# Downloaded knowledge-base documents (keep the directory placeholder)
+data/docs/*
+!data/docs/.gitkeep
+
+# IDE and operating-system files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Private keys and certificates
+*.pem

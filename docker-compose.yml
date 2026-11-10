@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: knowbot-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-knowbot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-knowbot}
+      POSTGRES_DB: ${POSTGRES_DB:-knowbot}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U knowbot"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: knowbot-backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://knowbot:knowbot@postgres:5432/knowbot
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ENV: ${ENV:-development}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/tests:/app/tests
+      - ./data:/app/data
+    command: uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+    
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: knowbot-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+      - frontend_next_cache:/app/.next
+    environment:
+      - NODE_ENV=development
+    command: sh -c "npm install && npm run dev -- --hostname 0.0.0.0"
+
+volumes:
+  postgres_data:
+  frontend_node_modules:
+  frontend_next_cache:
