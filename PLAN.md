@@ -16,10 +16,10 @@
 ## 🎯 Этап 0: Подготовка и окружение
 
 ### Что изучить
-- [ ] Docker и Docker Compose (официальный tutorial, 2–3 часа)
-- [ ] Основы PostgreSQL (SELECT, JOIN, индексы — если не знаешь)
-- [ ] Git flow: ветки, PR, .gitignore
-- [ ] Python virtual environments (`venv` или `uv`)
+- [x] Docker и Docker Compose (официальный tutorial, 2–3 часа)
+- [x] Основы PostgreSQL (SELECT, JOIN, индексы — если не знаешь)
+- [x] Git flow: ветки, PR, .gitignore
+- [x] Python virtual environments (`venv` или `uv`)
 
 ### Что сделать
 - [ ] Создать репозиторий на GitHub: `knowbot`
@@ -35,9 +35,9 @@
   ├── Dockerfile.frontend
   └── README.md
   ```
-- [ ] Настроить `docker-compose.yml` с сервисами: `postgres` (с pgvector), `backend`, `frontend`
+- [x] Настроить `docker-compose.yml` с сервисами: `postgres` (с pgvector), `backend`, `frontend`
 - [ ] Подключить `.env` для секретов (API-ключи OpenAI и т.п.)
-- [ ] Настроить pre-commit hooks (optional: `ruff`, `black`, `mypy`)
+- [x] Настроить pre-commit hooks (optional: `ruff`, `black`, `mypy`)
 
 ### Критерий готовности
 Проект клонируется, `docker compose up` поднимает пустой Postgres с pgvector.
@@ -49,8 +49,7 @@
 ### Что изучить
 - [ ] Форматы: PDF, DOCX, Markdown — как устроены внутри
 - [ ] Библиотеки: `PyMuPDF` (быстрый PDF), `python-docx`, `markdown-it-py`
-- [ ] Концепция **document structure**: заголовки → секции → параграфы
-- [ ] Альтернатива: `unstructured.io` (если хочется production-grade парсер)
+- [x] Концепция **document structure**: заголовки → секции → параграфы
 
 ### Что сделать
 - [ ] Собрать 3–5 тестовых документов (PDF-регламенты, политики компании)

@@ -1,0 +1,80 @@
+[
+  {
+    "metadata": {
+      "doc_id": "c9a4a4c8-9c85-4364-a541-5bb6d32a45e6",
+      "title": "security_policy",
+      "source_path": "../data/docs/security_policy.md",
+      "file_type": "md"
+    },
+    "chunks": [
+      {
+        "text": "Настоящая политика определяет правила обработки конфиденциальной информации в компании.\nВсе сотрудники обязаны строго соблюдать данные правила для защиты данных.",
+        "doc_id": "c9a4a4c8-9c85-4364-a541-5bb6d32a45e6",
+        "title": "Политика информационной безопасности",
+        "section_path": "Политика информационной безопасности > 1. Общие положения",
+        "page_number": null,
+        "chunk_id": "a1e11d2c-5b72-4242-899b-313d3ad3b81b"
+      },
+      {
+        "text": "Пароль должен содержать не менее 12 символов, включая цифры и спецсимволы.\nКатегорически запрещается передавать пароли третьим лицам или записывать их на стикерах.",
+        "doc_id": "c9a4a4c8-9c85-4364-a541-5bb6d32a45e6",
+        "title": "Политика информационной безопасности",
+        "section_path": "Политика информационной безопасности > 2. Правила работы с паролями",
+        "page_number": null,
+        "chunk_id": "bc9d760b-ee8d-43fb-97a6-9c734975f27f"
+      }
+    ]
+  },
+  {
+    "metadata": {
+      "doc_id": "9b60ebff-a1d6-4d99-8f74-69c16e72750e",
+      "title": "hr_policy",
+      "source_path": "../data/docs/hr_policy.docx",
+      "file_type": "docx"
+    },
+    "chunks": [
+      {
+        "text": "Политика отпусков и рабочих часов",
+        "doc_id": "9b60ebff-a1d6-4d99-8f74-69c16e72750e",
+        "title": "Без названия",
+        "section_path": "Общий раздел",
+        "page_number": null,
+        "chunk_id": "ad0fd6c8-eb18-43ba-81e2-de349f84f18f"
+      },
+      {
+        "text": "Стандартный рабочий день составляет 8 часов. Начало работы в 9:00, окончание в 18:00.",
+        "doc_id": "9b60ebff-a1d6-4d99-8f74-69c16e72750e",
+        "title": "1. Продолжительность рабочего дня",
+        "section_path": "1. Продолжительность рабочего дня",
+        "page_number": null,
+        "chunk_id": "5edc2c0f-dba2-4e82-92a5-b5d6ea3e5cf9"
+      },
+      {
+        "text": "Заявление на ежегодный оплачиваемый отпуск подается не менее чем за 2 недели до начала.",
+        "doc_id": "9b60ebff-a1d6-4d99-8f74-69c16e72750e",
+        "title": "2. Оформление отпуска",
+        "section_path": "2. Оформление отпуска",
+        "page_number": null,
+        "chunk_id": "3dcd7208-8636-41cf-a1fc-65a5024fcf18"
+      }
+    ]
+  },
+  {
+    "metadata": {
+      "doc_id": "69432213-7b98-4f3d-8a20-bab1936ef808",
+      "title": "",
+      "source_path": "../data/docs/data_protection.pdf",
+      "file_type": "pdf"
+    },
+    "chunks": [
+      {
+        "text": "All employees must follow these data protection guidelines. Section 1: Do not share your password with anyone under any circumstances.",
+        "doc_id": "69432213-7b98-4f3d-8a20-bab1936ef808",
+        "title": "Data Protection Guidelines",
+        "section_path": "Data Protection Guidelines",
+        "page_number": 1,
+        "chunk_id": "d1192e70-28db-4a0d-abf1-6dd1c8168897"
+      }
+    ]
+  }
+]
