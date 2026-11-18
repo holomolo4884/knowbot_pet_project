@@ -2,24 +2,29 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Копируем исполняемый файл uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
-# Указываем uv использовать индекс с CPU-версиями PyTorch
-ENV UV_EXTRA_INDEX_URL=https://download.pytorch.org/whl/cpu
+ENV UV_LINK_MODE=copy \
+    UV_PYTHON=/usr/local/bin/python3 \
+    UV_PYTHON_DOWNLOADS=never \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/app/.venv/bin:$PATH"
 
-# Добавляем bin-папку виртуального окружения в PATH
-ENV PATH="/app/.venv/bin:$PATH"
+# ── Слой 1: только зависимости ─────────────────────────────
+# Копируем ТОЛЬКО манифесты. Код сюда не попадает,
+# поэтому правка .py не инвалидирует тяжёлый слой с torch.
+COPY pyproject.toml uv.lock README.md ./
 
-# Копируем файлы, необходимые hatchling для сборки пакета и установки зависимостей
-COPY pyproject.toml uv.lock* README.md ./
-COPY app ./app
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --all-extras --no-dev --no-install-project --frozen
 
-# Устанавливаем зависимости
-RUN uv sync --all-extras --no-dev --python /usr/local/bin/python3
-
-# Копируем остальной код (тесты, скрипты, конфиги и т.д.)
+# ── Слой 2: код проекта ────────────────────────────────────
 COPY . .
 
-# Запускаем сервер
-CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --all-extras --no-dev --frozen
+
+# uvicorn берётся из /app/.venv/bin (PATH выше).
+# Никакого `uv run` — окружение уже готово на этапе сборки.
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

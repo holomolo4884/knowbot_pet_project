@@ -65,7 +65,7 @@ def ingest(
                     # Собираем все тексты для батчинга
                     texts = [chunk.text for chunk in doc.chunks]
                     # Получаем векторы
-                    embeddings = embedding_service.embed_texts(texts)
+                    embeddings = embedding_service.embed_passages(texts)
                     # Сохраняем в БД
                     await DocumentRepository.save_parsed_document(db, doc, embeddings)
         
