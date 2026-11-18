@@ -2,34 +2,28 @@ import typer
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
+from loguru import logger
 
 from .processor import IngestionProcessor
+from app.core.database import async_session_maker
+from app.services.embedding_service import embedding_service
+from app.repositories.document_repository import DocumentRepository
 
 app = typer.Typer(help="CLI для парсинга документов", no_args_is_help=True)
 console = Console()
 
-
 @app.callback()
 def main() -> None:
-    """
-    KnowBot Ingestion CLI.
-
-    Наличие callback заставляет Typer работать в режиме подкоманд,
-    поэтому вызов выглядит как: python -m app.ingestion ingest <dir>
-    """
     pass
-
 
 @app.command("ingest")
 def ingest(
     directory: Path = typer.Argument(..., help="Директория с документами (PDF, DOCX, MD)"),
-    output: Path = typer.Option(
-        "../data/parsed_output.json", help="Куда сохранить JSON результат"
-    ),
+    output: Path = typer.Option(None, help="Куда сохранить JSON результат (опционально)"),
+    save_to_db: bool = typer.Option(False, "--db", help="Сохранить векторы в PostgreSQL")
 ) -> None:
-    """Сканирует директорию, парсит документы и сохраняет в JSON."""
+    """Сканирует директорию, парсит документы и (опционально) сохраняет в БД."""
     processor = IngestionProcessor()
-
     console.print(f"[bold cyan]Обрабатываю директорию:[/bold cyan] {directory.absolute()}")
 
     try:
@@ -55,11 +49,28 @@ def ingest(
             str(len(doc.chunks)),
             doc.metadata.doc_id[:8] + "...",
         )
-
     console.print(table)
 
-    processor.save_to_json(documents, output)
-    console.print(f"[bold green]✓[/bold green] Сохранено в {output.absolute()}")
+    if output:
+        processor.save_to_json(documents, output)
+        console.print(f"[bold green]✓[/bold green] Сохранено в JSON: {output.absolute()}")
+
+    if save_to_db:
+        console.print("\n[bold yellow]Генерирую эмбеддинги и сохраняю в БД...[/bold yellow]")
+        import asyncio
+        
+        async def _save_all():
+            async with async_session_maker() as db:
+                for doc in documents:
+                    # Собираем все тексты для батчинга
+                    texts = [chunk.text for chunk in doc.chunks]
+                    # Получаем векторы
+                    embeddings = embedding_service.embed_texts(texts)
+                    # Сохраняем в БД
+                    await DocumentRepository.save_parsed_document(db, doc, embeddings)
+        
+        asyncio.run(_save_all())
+        console.print("[bold green]✓[/bold green] Успешно сохранено в PostgreSQL!")
 
 
 if __name__ == "__main__":

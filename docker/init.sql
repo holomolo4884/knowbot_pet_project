@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS documents (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
     source_path TEXT,
+    file_type TEXT,
     created_at TIMESTAMP DEFAULT NOW()
 );
 

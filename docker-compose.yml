@@ -3,11 +3,11 @@ services:
     image: pgvector/pgvector:pg16
     container_name: knowbot-db
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-knowbot}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-knowbot}
-      POSTGRES_DB: ${POSTGRES_DB:-knowbot}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql

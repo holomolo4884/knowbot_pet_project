@@ -8,10 +8,13 @@ class PDFParser:
         logger.info(f"Parsing PDF: {file_path.name}")
         doc = fitz.open(file_path)
         
+        raw_title = (doc.metadata or {}).get("title") or ""
+        title = raw_title.strip() or file_path.stem
+
         metadata = DocumentMetadata(
-            title=doc.metadata.get('title', file_path.stem),
+            title=title,
             source_path=str(file_path),
-            file_type="pdf"
+            file_type="pdf",
         )
         
         chunks = []
