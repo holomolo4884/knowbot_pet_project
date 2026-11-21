@@ -115,6 +115,7 @@ class RAGService:
 
         filt = CitationStreamFilter(len(chunks))
         full_text_parts: list[str] = []
+        ttft_ms: float | None = None
         started = time.perf_counter()
 
         try:
@@ -124,6 +125,8 @@ class RAGService:
             ):
                 safe = filt.feed(piece)
                 if safe:
+                    if ttft_ms is None:
+                        ttft_ms = round((time.perf_counter() - started) * 1000, 2)
                     full_text_parts.append(safe)
                     yield sse("delta", {"text": safe})
 
@@ -164,6 +167,7 @@ class RAGService:
             "abstained": abstained,
             "invalid_citation_markers": filt.invalid_count,
             "retrieval_ms": retrieval_ms,
+            "ttft_ms": ttft_ms,
             "generation_ms": generation_ms,
             "model": llm_service.model,
         })
