@@ -10,10 +10,14 @@ from app.core.database import engine, get_db
 from app.retrieval.retriever import Retriever
 from app.retrieval.schemas import SearchRequest, SearchResponse
 from app.services.embedding_service import embedding_service
+from app.core.config import settings
+from app.services.rag_schemas import ChatRequest, ChatResponse
+from app.services.rag_service import RAGService
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    settings.validate_llm()
     # Прогреваем модель на старте, чтобы первый запрос не тормозил
     logger.info("Warming up embedding model...")
     embedding_service.embed_query("warmup")
@@ -54,3 +58,9 @@ async def search(payload: SearchRequest, db: AsyncSession = Depends(get_db)):
         file_type=payload.file_type,
     )
     return SearchResponse(query=payload.query, took_ms=took_ms, results=results)
+
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat(payload: ChatRequest, db: AsyncSession = Depends(get_db)):
+    """Отвечает на вопрос по базе знаний с цитатами на источники."""
+    return await RAGService(db).answer(payload)

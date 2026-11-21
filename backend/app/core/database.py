@@ -1,30 +1,19 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import declarative_base
-from pydantic_settings import BaseSettings
 
-class Settings(BaseSettings):
-    DATABASE_URL: str = "postgresql+asyncpg://knowbot:knowbot@localhost:5432/knowbot"
-    
-    class Config:
-        env_file = ".env"
+from app.core.config import settings
 
-settings = Settings()
-
-# Создаем асинхронный движок
 engine = create_async_engine(
     settings.DATABASE_URL,
-    echo=False,  # Поставь True, если хочешь видеть SQL-запросы в консоли
+    echo=False,
     pool_pre_ping=True,
 )
 
-# Фабрика сессий
-async_session_maker = async_sessionmaker(
-    engine, class_=AsyncSession, expire_on_commit=False
-)
+async_session_maker = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 Base = declarative_base()
 
+
 async def get_db() -> AsyncSession:
-    """Dependency для FastAPI (понадобится позже)"""
     async with async_session_maker() as session:
         yield session

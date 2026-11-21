@@ -25,8 +25,17 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://knowbot:knowbot@postgres:5432/knowbot
       OPENAI_API_KEY: ${OPENAI_API_KEY}
-      ENV: ${ENV:-development}
+      LLM_BASE_URL: https://api.liteai.tech/v1
+      LLM_MODEL: gpt-5.6-sol
+      LLM_TEMPERATURE: 0.1
+      LLM_JSON_MODE: true
+      LLM_SUPPORTS_SEED: false
+      MIN_RELEVANCE_SCORE: 0.75
       HF_HOME: /root/.cache/huggingface
+      HF_HUB_OFFLINE: 1
+      TRANSFORMERS_OFFLINE: 1
+      HF_HUB_DISABLE_TELEMETRY: 1
+      ENV: ${ENV:-development}
     ports:
       - "8000:8000"
     depends_on:

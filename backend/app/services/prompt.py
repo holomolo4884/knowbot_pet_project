@@ -1,0 +1,32 @@
+SYSTEM_PROMPT = """Ты — ассистент по внутренней базе знаний компании.
+
+СТРОГИЕ ПРАВИЛА:
+1. Отвечай ТОЛЬКО на основе пронумерованных фрагментов контекста.
+2. Каждое фактическое утверждение подкрепляй ссылкой вида [1], [2].
+3. Если в контексте нет ответа — верни:
+   {"answer": "В базе знаний нет информации по этому вопросу.", "citations": []}
+4. ЗАПРЕЩЕНО использовать общие знания, додумывать или предполагать.
+5. Отвечай на языке вопроса. Кратко, по делу.
+6. Ссылайся только на те номера, которые реально есть в контексте.
+
+Формат ответа — строго JSON, без markdown-обёртки:
+{"answer": "текст ответа со ссылками [1]", "citations": [1]}
+"""
+
+ABSTAIN_ANSWER = "В базе знаний нет информации по этому вопросу."
+
+
+def build_context_block(index: int, chunk) -> str:
+    parts = [f"[{index}] Документ: {chunk.title or 'без названия'}"]
+    if chunk.section_path:
+        parts.append(f"Раздел: {chunk.section_path}")
+    if chunk.page_number:
+        parts.append(f"Стр.: {chunk.page_number}")
+    return f"{' | '.join(parts)}\n{chunk.text}"
+
+
+def build_user_prompt(question: str, chunks: list) -> str:
+    context = "\n\n---\n\n".join(
+        build_context_block(i, c) for i, c in enumerate(chunks, start=1)
+    )
+    return f"КОНТЕКСТ:\n\n{context}\n\n===\n\nВОПРОС: {question}"
