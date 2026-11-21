@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -64,3 +65,17 @@ async def search(payload: SearchRequest, db: AsyncSession = Depends(get_db)):
 async def chat(payload: ChatRequest, db: AsyncSession = Depends(get_db)):
     """Отвечает на вопрос по базе знаний с цитатами на источники."""
     return await RAGService(db).answer(payload)
+
+
+@app.post("/chat/stream")
+async def chat_stream(payload: ChatRequest, db: AsyncSession = Depends(get_db)):
+    """Стримит ответ по SSE: retrieval -> delta* -> citations -> meta -> done."""
+    return StreamingResponse(
+        RAGService(db).answer_stream(payload),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
