@@ -1,44 +1,69 @@
-const API_BASE = '/api'
+export interface Citation {
+  index: number;
+  chunk_id: string;
+  doc_id: string;
+  title: string | null;
+  section_path: string | null;
+  page_number: number | null;
+  score: number;
+}
 
 export interface ChatResponse {
-  answer: string
-  citations: Array<{
-    chunk_id: string
-    doc_id: string
-    section: string
-    page: number
-  }>
+  question: string;
+  answer: string;
+  citations: Citation[];
+  grounded: boolean;
+  abstained: boolean;
+  invalid_citation_markers: number;
+  retrieval_ms: number;
+  generation_ms: number;
+  model: string;
 }
 
-export async function askQuestion(
-  question: string,
-  filters?: Record<string, any>
-): Promise<ChatResponse> {
-  const response = await fetch(`${API_BASE}/chat`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question, filters }),
-  })
-  
-  if (!response.ok) {
-    throw new Error('Failed to get answer')
-  }
-  
-  return response.json()
+export interface RetrievedChunk {
+  chunk_id: string;
+  doc_id: string;
+  text: string;
+  title: string | null;
+  section_path: string | null;
+  page_number: number | null;
+  score: number;
 }
 
-export async function uploadDocument(file: File) {
-  const formData = new FormData()
-  formData.append('file', file)
-  
-  const response = await fetch(`${API_BASE}/documents/upload`, {
-    method: 'POST',
-    body: formData,
-  })
-  
-  if (!response.ok) {
-    throw new Error('Failed to upload document')
-  }
-  
-  return response.json()
+export interface SearchResponse {
+  query: string;
+  took_ms: number;
+  results: RetrievedChunk[];
 }
+
+export interface HealthResponse {
+  status: string;
+  chunks_indexed: number;
+}
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`/api${path}`, {
+    headers: { "Content-Type": "application/json" },
+    ...init,
+  });
+  if (!res.ok) {
+    throw new Error(`${res.status} ${res.statusText}: ${await res.text()}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+export const api = {
+  health: () => request<HealthResponse>("/health"),
+
+  search: (query: string, topK = 5) =>
+    request<SearchResponse>("/search", {
+      method: "POST",
+      body: JSON.stringify({ query, top_k: topK }),
+    }),
+
+  chat: (question: string, topK = 5) =>
+    request<ChatResponse>("/chat", {
+      method: "POST",
+      body: JSON.stringify({ question, top_k: topK }),
+    }),
+};

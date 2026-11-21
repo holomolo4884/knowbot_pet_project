@@ -1,16 +1,20 @@
-import { ChatInterface } from '@/components/chat/chat-interface'
+import { SystemStatus } from "@/components/system-status";
 
 export default function Home() {
   return (
-    <main className="min-h-screen p-8">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl font-bold mb-2">KnowBot</h1>
-        <p className="text-gray-600 mb-8">
+    <main className="mx-auto max-w-3xl p-8 space-y-6">
+      <header>
+        <h1 className="text-3xl font-bold">KnowBot</h1>
+        <p className="text-muted-foreground">
           AI-ассистент по внутренней базе знаний компании
         </p>
-        
-        <ChatInterface />
-      </div>
+      </header>
+
+      <SystemStatus />
+
+      <p className="text-sm text-muted-foreground">
+        Чат появится на подэтапе 5.4
+      </p>
     </main>
-  )
+  );
 }
