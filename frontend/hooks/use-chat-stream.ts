@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { openChatStream } from "@/lib/chat-api";
-import type { ChatState, Citation } from "@/lib/chat-types";
+import type { ChatState, Citation, MetaEvent } from "@/lib/chat-types";
 
 interface UseChatStream {
   state: ChatState;
@@ -30,7 +30,7 @@ export function useChatStream(): UseChatStream {
     const acc: {
       text: string;
       citations: Citation[];
-      meta: null | Record<string, unknown>;
+      meta: MetaEvent | null;
       retrieval: null | { hits: number; best_score: number; took_ms: number };
     } = {
       text: "",
@@ -85,14 +85,13 @@ export function useChatStream(): UseChatStream {
                 phase: "done",
                 text: acc.text,
                 citations: acc.citations,
-                grounded: (acc.meta?.grounded as boolean) ?? false,
-                abstained: (acc.meta?.abstained as boolean) ?? false,
-                invalid_citation_markers:
-                  (acc.meta?.invalid_citation_markers as number) ?? 0,
-                retrieval_ms: (acc.meta?.retrieval_ms as number) ?? 0,
-                generation_ms: (acc.meta?.generation_ms as number) ?? 0,
-                ttft_ms: (acc.meta?.ttft_ms as number | null) ?? null,
-                model: (acc.meta?.model as string) ?? "unknown",
+                grounded: acc.meta?.grounded ?? false,
+                abstained: acc.meta?.abstained ?? false,
+                invalid_citation_markers: acc.meta?.invalid_citation_markers ?? 0,
+                retrieval_ms: acc.meta?.retrieval_ms ?? 0,
+                generation_ms: acc.meta?.generation_ms ?? 0,
+                ttft_ms: acc.meta?.ttft_ms ?? null,
+                model: acc.meta?.model ?? "unknown",
               });
               controllerRef.current = null;
               break;
