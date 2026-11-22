@@ -14,6 +14,7 @@ from app.services.embedding_service import embedding_service
 from app.core.config import settings
 from app.services.rag_schemas import ChatRequest, ChatResponse
 from app.services.rag_service import RAGService
+from app.admin.router import router as admin_router
 
 
 @asynccontextmanager
@@ -33,6 +34,8 @@ app = FastAPI(
     version="0.3.0",
     lifespan=lifespan,
 )
+
+app.include_router(admin_router)
 
 app.add_middleware(
     CORSMiddleware,

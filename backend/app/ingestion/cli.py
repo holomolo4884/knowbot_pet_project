@@ -7,6 +7,7 @@ from loguru import logger
 from .processor import IngestionProcessor
 from app.core.database import async_session_maker
 from app.services.embedding_service import embedding_service
+from app.services.content_hash import compute_content_hash
 from app.repositories.document_repository import DocumentRepository
 
 app = typer.Typer(help="CLI для парсинга документов", no_args_is_help=True)
@@ -62,12 +63,19 @@ def ingest(
         async def _save_all():
             async with async_session_maker() as db:
                 for doc in documents:
-                    # Собираем все тексты для батчинга
                     texts = [chunk.text for chunk in doc.chunks]
-                    # Получаем векторы
                     embeddings = embedding_service.embed_passages(texts)
-                    # Сохраняем в БД
-                    await DocumentRepository.save_parsed_document(db, doc, embeddings)
+                    path = Path(doc.metadata.source_path)
+                    content_hash = compute_content_hash(
+                        path.suffix.lower(), path.read_bytes()
+                    )
+                    await DocumentRepository.save_parsed_document(
+                        db,
+                        doc,
+                        embeddings,
+                        content_hash=content_hash,
+                        file_size=f"{path.stat().st_size / (1024 * 1024):.2f} MB",
+                    )
         
         asyncio.run(_save_all())
         console.print("[bold green]✓[/bold green] Успешно сохранено в PostgreSQL!")

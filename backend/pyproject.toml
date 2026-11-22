@@ -8,13 +8,16 @@ authors = [
 ]
 requires-python = ">=3.11"
 dependencies = [
+    "aiofiles>=25.1.0",
     "asyncpg>=0.32.0",
+    "beautifulsoup4>=4.15.0",
     "loguru>=0.7.3",
     "markdown-it-py>=4.2.0",
     "openai>=2.54.0",
     "pgvector>=0.5.1",
     "pymupdf>=2.1",
     "python-docx>=1.2.0",
+    "python-multipart>=0.0.34",
     "rich>=15.0.0",
     "sentence-transformers>=6.2.0",
     "sqlalchemy[asyncio]>=2.1.8",
