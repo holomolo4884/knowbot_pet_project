@@ -84,3 +84,45 @@ def test_upload_idempotent(client):
     second = r2.json()
     assert second["doc_id"] == first["doc_id"]
     assert second["was_created"] is False
+
+
+def test_upload_stream_events(client):
+    uniq = uuid4().hex[:8]
+    content = f"# Стрим {uniq}\n\nПроверка прогресса индексации."
+    files = {"file": ("stream.md", BytesIO(content.encode()), "text/markdown")}
+
+    r = client.post("/admin/documents/upload/stream", files=files)
+    assert r.status_code == 200, r.text
+    assert r.headers["content-type"].startswith("text/event-stream")
+
+    text = r.text
+    assert "event: phase" in text
+    assert '"phase": "received"' in text
+    assert '"phase": "parsing"' in text
+    assert '"phase": "embedding"' in text
+    assert '"phase": "saving"' in text
+    assert "event: done" in text
+    assert '"was_created": true' in text
+
+
+def test_upload_stream_duplicate(client):
+    uniq = uuid4().hex[:8]
+    content = f"# Дубль {uniq}\n\nВторой проход должен быть мгновенным."
+    files = {"file": ("dup.md", BytesIO(content.encode()), "text/markdown")}
+
+    r1 = client.post("/admin/documents/upload/stream", files=files)
+    assert r1.status_code == 200
+    assert '"was_created": true' in r1.text
+
+    r2 = client.post("/admin/documents/upload/stream", files=files)
+    assert r2.status_code == 200
+    assert '"phase": "duplicate"' in r2.text
+    assert '"was_created": false' in r2.text
+
+
+def test_upload_stream_unsupported(client):
+    files = {"file": ("bad.jpg", BytesIO(b"fake"), "image/jpeg")}
+    r = client.post("/admin/documents/upload/stream", files=files)
+    assert r.status_code == 200
+    assert "event: error" in r.text
+    assert "Неподдерживаемый формат" in r.text
