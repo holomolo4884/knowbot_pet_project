@@ -3,6 +3,7 @@
 export interface RetrievalEvent {
   type: "retrieval";
   hits: number;
+  context_hits?: number;
   best_score: number;
   took_ms: number;
 }

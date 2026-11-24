@@ -10,12 +10,20 @@ from app.retrieval.retriever import Retriever
 console = Console()
 
 ON_TOPIC = [
+    # HR / security
     "Какой минимальной длины должен быть пароль?",
     "Можно ли передавать пароль коллегам?",
     "За сколько дней подавать заявление на отпуск?",
     "Во сколько начинается рабочий день?",
     "Сколько часов длится стандартный рабочий день?",
     "Какие символы обязательно должны быть в пароле?",
+    # Реальный документ: факты
+    "Сколько задач Codewars нужно решить 16 мая?",
+    "Какой проект нужно начать 29 мая?",
+    # Реальный документ: агрегация — раньше давали ложный отказ
+    "Какие видео нужно посмотреть и в какие дни?",
+    "Сколько всего марафонских дней в плане и сколько часов каждый?",
+    "Что делать в дни активного отдыха?",
 ]
 
 OFF_TOPIC = [
@@ -58,6 +66,17 @@ async def main() -> None:
     console.print(f"\non-topic  min = {min_pos:.4f}")
     console.print(f"off-topic max = {max_neg:.4f}")
     console.print(f"текущий порог = {settings.MIN_RELEVANCE_SCORE}")
+
+    false_abstain = [
+        q for q, s in zip(ON_TOPIC, pos) if s < settings.MIN_RELEVANCE_SCORE
+    ]
+    rate = len(false_abstain) / len(pos)
+    color = "green" if rate == 0 else ("yellow" if rate < 0.2 else "red")
+    console.print(
+        f"\n[{color}]False abstention: {len(false_abstain)}/{len(pos)} ({rate:.0%})[/{color}]"
+    )
+    for q in false_abstain:
+        console.print(f"  [red]✗[/red] {q}")
 
     if max_neg >= min_pos:
         console.print("[red]Распределения пересекаются — порог не разделит классы.[/red]")

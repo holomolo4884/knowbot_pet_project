@@ -44,3 +44,13 @@ def test_long_section_is_split(tmp_path):
 def test_no_headings_falls_back_to_general_section(tmp_path):
     doc = _parse(tmp_path, "просто текст без разметки\nвторая строка\n")
     assert doc.chunks[0].section_path == "Общий раздел"
+
+
+def test_h1_becomes_document_title(tmp_path):
+    doc = _parse(tmp_path, "# Человекочитаемый заголовок\nтекст\n")
+    assert doc.metadata.title == "Человекочитаемый заголовок"
+
+
+def test_no_h1_keeps_filename_title(tmp_path):
+    doc = _parse(tmp_path, "## Только подзаголовок\nтекст\n")
+    assert doc.metadata.title == "doc"
