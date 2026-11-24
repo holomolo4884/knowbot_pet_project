@@ -101,13 +101,21 @@ export function ChatContainer() {
             AI-ассистент по внутренней базе знаний
           </p>
         </div>
-        <button
-          type="button"
-          onClick={handleNewChat}
-          className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition hover:bg-slate-50"
-        >
-          Новый чат
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href="/admin/upload"
+            className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition hover:bg-slate-50"
+          >
+            Документы
+          </a>
+          <button
+            type="button"
+            onClick={handleNewChat}
+            className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition hover:bg-slate-50"
+          >
+            Новый чат
+          </button>
+        </div>
       </header>
 
       {/* Лента сообщений */}

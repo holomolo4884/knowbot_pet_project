@@ -12,9 +12,9 @@ export function createParser(): ParserState {
  * Скармливает парсеру новый кусок текста и возвращает завершённые события.
  * Незавершённое событие остаётся в буфере до следующего куска.
  */
-export function feed(state: ParserState, chunk: string): StreamEvent[] {
+export function feed<T = StreamEvent>(state: ParserState, chunk: string): T[] {
   state.buffer += chunk;
-  const events: StreamEvent[] = [];
+  const events: T[] = [];
 
   // SSE-события разделены двойным переводом строки
   while (true) {
@@ -24,14 +24,14 @@ export function feed(state: ParserState, chunk: string): StreamEvent[] {
     const frame = state.buffer.slice(0, boundary);
     state.buffer = state.buffer.slice(boundary + 2);
 
-    const parsed = parseFrame(frame);
+    const parsed = parseFrame<T>(frame);
     if (parsed) events.push(parsed);
   }
 
   return events;
 }
 
-function parseFrame(frame: string): StreamEvent | null {
+function parseFrame<T>(frame: string): T | null {
   let event = "message";
   const dataLines: string[] = [];
 
@@ -48,8 +48,7 @@ function parseFrame(frame: string): StreamEvent | null {
 
   const payload = dataLines.join("\n");
   try {
-    const data = JSON.parse(payload);
-    return { type: event, ...data } as StreamEvent;
+    return { type: event, ...JSON.parse(payload) } as T;
   } catch {
     // Сломанный JSON — пропускаем, но логируем
     console.warn(`[sse-parser] bad JSON in event '${event}':`, payload);
