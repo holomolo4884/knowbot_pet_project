@@ -1,54 +1,123 @@
-from markdown_it import MarkdownIt
+import re
 from pathlib import Path
+
 from loguru import logger
-from ..models import DocumentMetadata, Chunk, ParsedDocument
+
+from ..models import Chunk, DocumentMetadata, ParsedDocument
+
+HEADING_RE = re.compile(r"^(#{1,6})\s+(.*)$")
+BOLD_LINE_RE = re.compile(r"^\*\*(.+?)\*\*:?\s*$")
+
+MAX_CHARS = 1200
+OVERLAP = 150
+MAX_PSEUDO_HEADING_LEN = 80
+
 
 class MarkdownParser:
-    def __init__(self):
-        self.md = MarkdownIt()
+    """Markdown с корректной иерархией и фолбэк-чанкингом.
+
+    - Уровни заголовков ведутся стеком, а не срезом: соседи одного уровня
+      замещают друг друга, а не вкладываются.
+    - Строка целиком из **bold** трактуется как псевдо-заголовок на уровень глубже.
+      Реальные документы часто структурированы визуально, а не разметкой.
+    - Секции длиннее MAX_CHARS режутся по строкам с перекрытием.
+    """
 
     def parse(self, file_path: Path) -> ParsedDocument:
         logger.info(f"Parsing Markdown: {file_path.name}")
-        content = file_path.read_text(encoding='utf-8')
-        tokens = self.md.parse(content)
-        
+        lines = file_path.read_text(encoding="utf-8").splitlines()
+
         metadata = DocumentMetadata(
             title=file_path.stem,
             source_path=str(file_path),
-            file_type="md"
+            file_type="md",
         )
-        
-        chunks = []
-        current_section_path = []
-        current_text_parts = []
-        
-        for i, token in enumerate(tokens):
-            if token.type == 'heading_open':
-                if current_text_parts:
-                    chunks.append(self._make_chunk(current_text_parts, metadata.doc_id, current_section_path))
-                    current_text_parts = []
-                
-                level = int(token.tag[1])
-                # Следующий токен содержит текст заголовка
-                if i + 1 < len(tokens) and tokens[i+1].type == 'inline':
-                    heading_text = tokens[i+1].content.strip()
-                    current_section_path = current_section_path[:level-1] + [heading_text]
-            elif token.type == 'inline' and token.content.strip():
-                # Пропускаем, если это заголовок (он уже обработан)
-                if i > 0 and tokens[i-1].type == 'heading_open':
-                    continue
-                current_text_parts.append(token.content.strip())
-                
-        if current_text_parts:
-            chunks.append(self._make_chunk(current_text_parts, metadata.doc_id, current_section_path))
-            
+
+        chunks: list[Chunk] = []
+        stack: list[tuple[int, str]] = []
+        buf: list[str] = []
+        heading_level = 0
+
+        def current_path() -> list[str]:
+            return [title for _, title in stack]
+
+        def flush() -> None:
+            nonlocal buf
+            if not buf:
+                return
+            text = "\n".join(buf).strip()
+            buf = []
+            if text:
+                chunks.extend(self._split(text, metadata.doc_id, current_path()))
+
+        def push(level: int, title: str) -> None:
+            while stack and stack[-1][0] >= level:
+                stack.pop()
+            stack.append((level, title))
+
+        for raw_line in lines:
+            line = raw_line.strip()
+
+            if not line:
+                buf.append("")
+                continue
+
+            heading = HEADING_RE.match(line)
+            if heading:
+                flush()
+                heading_level = len(heading.group(1))
+                title = heading.group(2).strip()
+                push(heading_level, title)
+                if heading_level == 1 and metadata.title == file_path.stem:
+                    metadata.title = title
+                continue
+
+            bold = BOLD_LINE_RE.match(line)
+            if bold and len(line) <= MAX_PSEUDO_HEADING_LEN:
+                flush()
+                push(heading_level + 1, bold.group(1).strip().rstrip(":"))
+                continue
+
+            buf.append(line)
+
+        flush()
+        logger.info(f"Parsed {file_path.name}: {len(chunks)} chunks")
         return ParsedDocument(metadata=metadata, chunks=chunks)
 
-    def _make_chunk(self, text_parts: list[str], doc_id: str, section_path: list[str]) -> Chunk:
-        return Chunk(
-            text=" ".join(text_parts),
-            doc_id=doc_id,
-            title=section_path[0] if section_path else "Без названия",
-            section_path=" > ".join(section_path) if section_path else "Общий раздел",
-            page_number=None
-        )
+    def _split(self, text: str, doc_id: str, path: list[str]) -> list[Chunk]:
+        section = " > ".join(path) if path else "Общий раздел"
+        title = path[0] if path else "Без названия"
+
+        if len(text) <= MAX_CHARS:
+            return [
+                Chunk(
+                    text=text,
+                    doc_id=doc_id,
+                    title=title,
+                    section_path=section,
+                    page_number=None,
+                )
+            ]
+
+        parts: list[str] = []
+        buf = ""
+        for line in text.split("\n"):
+            if buf and len(buf) + len(line) + 1 > MAX_CHARS:
+                parts.append(buf.strip())
+                tail = buf[-OVERLAP:] if OVERLAP else ""
+                buf = f"{tail}\n{line}" if tail else line
+            else:
+                buf = f"{buf}\n{line}" if buf else line
+        if buf.strip():
+            parts.append(buf.strip())
+
+        return [
+            Chunk(
+                text=part,
+                doc_id=doc_id,
+                title=title,
+                section_path=section,
+                page_number=None,
+            )
+            for part in parts
+        ]

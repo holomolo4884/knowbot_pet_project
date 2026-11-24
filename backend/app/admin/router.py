@@ -44,6 +44,7 @@ class UploadResponse(BaseModel):
 @router.post("/upload", response_model=UploadResponse)
 async def upload_document(
     file: UploadFile = File(...),
+    force: bool = False,
     db: AsyncSession = Depends(get_db),
 ):
     """Загружает файл, парсит, индексирует. Идемпотентно по content_hash."""
@@ -68,7 +69,7 @@ async def upload_document(
     started = time.perf_counter()
 
     # Проверка: может, этот файл уже загружен?
-    existing = await DocumentRepository.find_by_content_hash(db, content_hash)
+    existing = None if force else await DocumentRepository.find_by_content_hash(db, content_hash)
     if existing:
         took_ms = round((time.perf_counter() - started) * 1000, 2)
         logger.info(f"Файл уже загружен (id={existing.id}), возвращаем существующий")
@@ -117,7 +118,7 @@ async def upload_document(
 
 
 @router.post("/upload/stream")
-async def upload_document_stream(file: UploadFile = File(...)):
+async def upload_document_stream(file: UploadFile = File(...), force: bool = False):
     """Загрузка с SSE-прогрессом: received -> parsing -> embedding* -> saving -> done."""
     # Читаем ДО генератора: UploadFile закроется к моменту стриминга
     content = await file.read()
@@ -150,7 +151,10 @@ async def upload_document_stream(file: UploadFile = File(...)):
             })
 
             async with async_session_maker() as db:
-                existing = await DocumentRepository.find_by_content_hash(db, content_hash)
+                existing = (
+                    None if force
+                    else await DocumentRepository.find_by_content_hash(db, content_hash)
+                )
                 if existing:
                     yield sse("phase", {"phase": "duplicate", "pct": 100})
                     yield sse("done", {
