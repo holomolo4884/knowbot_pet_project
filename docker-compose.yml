@@ -30,7 +30,7 @@ services:
       LLM_TEMPERATURE: 0.1
       LLM_JSON_MODE: true
       LLM_SUPPORTS_SEED: false
-      MIN_RELEVANCE_SCORE: 0.805
+      MIN_RELEVANCE_SCORE: 0.78
       HF_HOME: /root/.cache/huggingface
       HF_HUB_OFFLINE: 1
       TRANSFORMERS_OFFLINE: 1
