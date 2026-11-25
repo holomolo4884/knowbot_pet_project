@@ -1,7 +1,7 @@
 import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 from loguru import logger
 
@@ -40,33 +40,34 @@ class DocumentRepository:
         embeddings: list[list[float]],
         content_hash: str,
         file_size: str | None = None,
+        title_override: str | None = None,
     ) -> tuple[Document, bool]:
-        """Upsert по content_hash.
-
-        Возвращает (document, was_created).
-        При совпадении хеша удаляет старый документ и создаёт новый
-        (свежие эмбеддинги могут отличаться от старых).
-        """
         existing = await DocumentRepository.find_by_content_hash(db, content_hash)
 
         if existing:
-            # Удаляем старый документ (каскадно удалятся чанки)
+            doc_id = existing.id
+            title = title_override or existing.title
+            created_at = existing.created_at
             await db.delete(existing)
             await db.flush()
             was_created = False
         else:
+            doc_id = uuid.UUID(parsed_doc.metadata.doc_id)
+            title = title_override or parsed_doc.metadata.title
+            created_at = None
             was_created = True
 
-        doc_id = uuid.UUID(parsed_doc.metadata.doc_id)
-
-        db_doc = Document(
+        doc_kwargs = dict(
             id=doc_id,
-            title=parsed_doc.metadata.title,
+            title=title,
             source_path=parsed_doc.metadata.source_path,
             file_type=parsed_doc.metadata.file_type,
             content_hash=content_hash,
             file_size=file_size,
         )
+        if created_at is not None:
+            doc_kwargs["created_at"] = created_at
+        db_doc = Document(**doc_kwargs)
 
         for chunk, vector in zip(parsed_doc.chunks, embeddings):
             db_doc.chunks.append(
@@ -91,3 +92,29 @@ class DocumentRepository:
             f"({db_doc.file_type}) with {len(db_doc.chunks)} chunks"
         )
         return db_doc, was_created
+    
+    @staticmethod
+    async def list_with_counts(db: AsyncSession) -> list[tuple[Document, int]]:
+        stmt = (
+            select(Document, func.count(Chunk.id))
+            .outerjoin(Chunk, Chunk.document_id == Document.id)
+            .group_by(Document.id)
+            .order_by(Document.created_at.desc())
+        )
+        rows = (await db.execute(stmt)).all()
+        return [(row[0], row[1]) for row in rows]
+
+    @staticmethod
+    async def get_by_id(db: AsyncSession, doc_id) -> Document | None:
+        result = await db.execute(select(Document).where(Document.id == doc_id))
+        return result.scalar_one_or_none()
+
+    @staticmethod
+    async def rename(db: AsyncSession, doc_id, title: str) -> Document | None:
+        doc = await DocumentRepository.get_by_id(db, doc_id)
+        if doc is None:
+            return None
+        doc.title = title
+        await db.commit()
+        await db.refresh(doc)
+        return doc

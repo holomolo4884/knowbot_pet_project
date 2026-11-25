@@ -166,3 +166,79 @@ def test_upload_stream_unsupported(client):
     assert r.status_code == 200
     assert "event: error" in r.text
     assert "Неподдерживаемый формат" in r.text
+
+
+def test_list_documents(client, created_docs):
+    uniq = uuid4().hex[:8]
+    content = f"# Список {uniq}\n\nДокумент для проверки листинга."
+    files = {"file": ("list.md", BytesIO(content.encode()), "text/markdown")}
+    r = client.post("/admin/documents/upload", files=files)
+    doc_id = r.json()["doc_id"]
+    created_docs.append(doc_id)
+
+    listing = client.get("/admin/documents")
+    assert listing.status_code == 200
+    item = next(d for d in listing.json() if d["doc_id"] == doc_id)
+    assert item["chunks"] >= 1
+    assert item["stored"] is True
+    assert item["title"] == f"Список {uniq}"
+
+
+def test_rename_document(client, created_docs):
+    uniq = uuid4().hex[:8]
+    content = f"Текст без заголовка {uniq}."
+    files = {"file": (f"raw_{uniq}.md", BytesIO(content.encode()), "text/markdown")}
+    doc_id = client.post("/admin/documents/upload", files=files).json()["doc_id"]
+    created_docs.append(doc_id)
+
+    r = client.patch(f"/admin/documents/{doc_id}", json={"title": "План обучения JS"})
+    assert r.status_code == 200
+    assert r.json()["title"] == "План обучения JS"
+
+
+def test_custom_title_on_upload(client, created_docs):
+    uniq = uuid4().hex[:8]
+    content = f"# Заголовок из файла {uniq}\n\nТекст."
+    files = {"file": ("t.md", BytesIO(content.encode()), "text/markdown")}
+    r = client.post(
+        "/admin/documents/upload", files=files, data={"title": "Моё название"}
+    )
+    assert r.status_code == 200
+    created_docs.append(r.json()["doc_id"])
+    assert r.json()["title"] == "Моё название"
+
+
+def test_reindex_preserves_identity_and_title(client, created_docs):
+    uniq = uuid4().hex[:8]
+    content = f"# Реиндекс {uniq}\n\nТекст для пересборки чанков."
+    files = {"file": ("re.md", BytesIO(content.encode()), "text/markdown")}
+    first = client.post("/admin/documents/upload", files=files).json()
+    doc_id = first["doc_id"]
+    created_docs.append(doc_id)
+
+    client.patch(f"/admin/documents/{doc_id}", json={"title": "Переименованный"})
+    r = client.post(f"/admin/documents/{doc_id}/reindex")
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert data["doc_id"] == doc_id
+    assert data["title"] == "Переименованный"
+    assert data["chunks"] == first["chunks"]
+
+
+def test_delete_document(client, created_docs):
+    uniq = uuid4().hex[:8]
+    content = f"# Удаление {uniq}\n\nВременный документ."
+    files = {"file": ("del.md", BytesIO(content.encode()), "text/markdown")}
+    doc_id = client.post("/admin/documents/upload", files=files).json()["doc_id"]
+
+    r = client.delete(f"/admin/documents/{doc_id}")
+    assert r.status_code == 204
+
+    listing = client.get("/admin/documents").json()
+    assert all(d["doc_id"] != doc_id for d in listing)
+    created_docs.append(doc_id)  # повторное удаление идемпотентно
+
+
+def test_delete_missing_returns_404(client):
+    r = client.delete(f"/admin/documents/{uuid4()}")
+    assert r.status_code == 404

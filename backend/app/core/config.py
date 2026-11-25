@@ -7,6 +7,8 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://knowbot:knowbot@localhost:5433/knowbot"
+    UPLOAD_DIR: str = "../data/uploads"
+    DOCS_DIR: str = "../data/docs"        
 
     # LLM — OpenAI gpt-4o-mini
     LLM_BASE_URL: str = "https://api.openai.com/v1"
