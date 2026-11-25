@@ -35,6 +35,8 @@ services:
       HF_HUB_OFFLINE: 1
       TRANSFORMERS_OFFLINE: 1
       HF_HUB_DISABLE_TELEMETRY: 1
+      UPLOAD_DIR: /app/data/uploads
+      DOCS_DIR: /app/data/docs
       ENV: ${ENV:-development}
     ports:
       - "8000:8000"
