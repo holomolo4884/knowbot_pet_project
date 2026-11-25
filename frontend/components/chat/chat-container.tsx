@@ -103,7 +103,7 @@ export function ChatContainer() {
         </div>
         <div className="flex items-center gap-2">
           <a
-            href="/admin/upload"
+            href="/admin/documents"
             className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition hover:bg-slate-50"
           >
             Документы
