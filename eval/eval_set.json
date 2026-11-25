@@ -1,0 +1,50 @@
+{
+  "version": "1.0",
+  "description": "40 вопросов для eval KnowBot. Категории: fact/aggregate/paraphrase/trap/off-topic",
+  "questions": [
+    {"id": 1, "type": "fact", "question": "Какой минимальной длины должен быть пароль?", "expected_keywords": ["12", "символ"], "answerable": true},
+    {"id": 2, "type": "fact", "question": "Можно ли передавать пароль коллегам?", "expected_keywords": ["нельзя", "третьим"], "answerable": true},
+    {"id": 3, "type": "fact", "question": "За сколько дней подавать заявление на отпуск?", "expected_keywords": ["2", "недел"], "answerable": true},
+    {"id": 4, "type": "fact", "question": "Во сколько начинается рабочий день?", "expected_keywords": ["9:00", "9"], "answerable": true},
+    {"id": 5, "type": "fact", "question": "Сколько часов длится стандартный рабочий день?", "expected_keywords": ["8"], "answerable": true},
+    {"id": 6, "type": "fact", "question": "Какие символы обязательно должны быть в пароле?", "expected_keywords": ["цифр", "спец"], "answerable": true},
+    {"id": 7, "type": "fact", "question": "Сколько минут длится конспект по понедельникам?", "expected_keywords": ["15"], "answerable": true},
+    {"id": 8, "type": "fact", "question": "Что такое hoisting в JavaScript?", "expected_keywords": ["всплыв", "hoisting"], "answerable": true},
+    {"id": 9, "type": "fact", "question": "Сколько задач Codewars нужно решить 16 мая?", "expected_keywords": ["10"], "answerable": true},
+    {"id": 10, "type": "fact", "question": "Какой проект нужно начать 29 мая?", "expected_keywords": ["To-Do", "Умный"], "answerable": true},
+
+    {"id": 11, "type": "aggregate", "question": "Какие видео нужно посмотреть и в какие дни?", "expected_keywords": ["17", "24", "YouTube"], "answerable": true},
+    {"id": 12, "type": "aggregate", "question": "Сколько всего марафонских дней в плане и сколько часов каждый?", "expected_keywords": ["3", "2.5"], "answerable": true},
+    {"id": 13, "type": "aggregate", "question": "Что делать в дни активного отдыха?", "expected_keywords": ["запис", "видео", "доклад"], "answerable": true},
+    {"id": 14, "type": "aggregate", "question": "Перечисли все требования к паролям", "expected_keywords": ["12", "передавать", "символ"], "answerable": true},
+    {"id": 15, "type": "aggregate", "question": "Какие темы изучаются на второй неделе?", "expected_keywords": ["массив", "объект"], "answerable": true},
+    {"id": 16, "type": "aggregate", "question": "Какие задачи нужно решить на марафонских днях?", "expected_keywords": ["Codewars", "kyu"], "answerable": true},
+    {"id": 17, "type": "aggregate", "question": "Сколько часов в неделю нужно уделять обучению?", "expected_keywords": ["15", "конспект", "практик"], "answerable": true},
+    {"id": 18, "type": "aggregate", "question": "Какие проекты нужно сделать за месяц?", "expected_keywords": ["To-Do", "quiz", "Менеджер"], "answerable": true},
+
+    {"id": 19, "type": "paraphrase", "question": "Когда старт итогового проекта?", "expected_keywords": ["29", "мая"], "answerable": true},
+    {"id": 20, "type": "paraphrase", "question": "Как долго нужно писать заявление на отпуск?", "expected_keywords": ["2", "недел"], "answerable": true},
+    {"id": 21, "type": "paraphrase", "question": "Какая продолжительность рабочего дня в компании?", "expected_keywords": ["8", "час"], "answerable": true},
+    {"id": 22, "type": "paraphrase", "question": "Что делать если задача на Codewars заняла больше 10 минут?", "expected_keywords": ["решени", "разбира"], "answerable": true},
+    {"id": 23, "type": "paraphrase", "question": "Как избежать бесконечного цикла?", "expected_keywords": ["break", "условие"], "answerable": true},
+    {"id": 24, "type": "paraphrase", "question": "Чем отличается let от var?", "expected_keywords": ["блочн", "игнор"], "answerable": true},
+    {"id": 25, "type": "paraphrase", "question": "Что такое замыкание простыми словами?", "expected_keywords": ["видит", "перемен"], "answerable": true},
+    {"id": 26, "type": "paraphrase", "question": "Как правильно сравнивать значения в JS?", "expected_keywords": ["===", "тройн"], "answerable": true},
+
+    {"id": 27, "type": "trap", "question": "Что такое TDZ (Temporal Dead Zone)?", "expected_keywords": [], "answerable": false},
+    {"id": 28, "type": "trap", "question": "Что выведет '5' == 5?", "expected_keywords": [], "answerable": false},
+    {"id": 29, "type": "trap", "question": "Чем null отличается от undefined?", "expected_keywords": [], "answerable": false},
+    {"id": 30, "type": "trap", "question": "Сколько стоит курс на Stepik?", "expected_keywords": [], "answerable": false},
+    {"id": 31, "type": "trap", "question": "Какая ссылка на JavaScript курс 2025?", "expected_keywords": [], "answerable": false},
+    {"id": 32, "type": "trap", "question": "Как настроить Kubernetes кластер?", "expected_keywords": [], "answerable": false},
+
+    {"id": 33, "type": "off-topic", "question": "Какая погода на поверхности Марса?", "expected_keywords": [], "answerable": false},
+    {"id": 34, "type": "off-topic", "question": "Кто выиграл чемпионат мира по футболу?", "expected_keywords": [], "answerable": false},
+    {"id": 35, "type": "off-topic", "question": "Как приготовить борщ?", "expected_keywords": [], "answerable": false},
+    {"id": 36, "type": "off-topic", "question": "Сколько стоит биткоин?", "expected_keywords": [], "answerable": false},
+    {"id": 37, "type": "off-topic", "question": "Кто написал Войну и мир?", "expected_keywords": [], "answerable": false},
+    {"id": 38, "type": "off-topic", "question": "Как настроить Docker?", "expected_keywords": [], "answerable": false},
+    {"id": 39, "type": "off-topic", "question": "Какая столица Австралии?", "expected_keywords": [], "answerable": false},
+    {"id": 40, "type": "off-topic", "question": "Сколько планет в Солнечной системе?", "expected_keywords": [], "answerable": false}
+  ]
+}
